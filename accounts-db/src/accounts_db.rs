@@ -7725,7 +7725,7 @@ impl AccountsDb {
             info!("calculate_accounts_hash_from_storages: slot: {slot}, {accounts_hash:?}, capitalization: {capitalization}");
             Ok((accounts_hash, capitalization))
         };
-
+/* Jack */ 
         let result = if use_bg_thread_pool {
             self.thread_pool_clean.install(scan_and_hash)
         } else {

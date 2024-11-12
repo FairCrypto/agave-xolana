@@ -1139,6 +1139,52 @@ impl Tower {
         ThresholdDecision::FailedThreshold(threshold_depth as u64, *fork_stake)
     }
 
+        /// Performs vote threshold checks for `slot`
+    pub fn check_vote_stake_thresholds2(
+        &self,
+        slot: Slot,
+        progress: &mut ProgressMap,
+    ) -> Vec<ThresholdDecision> {
+        let mut threshold_decisions = vec![];
+        // Generate the vote state assuming this vote is included.
+        let mut vote_state = self.vote_state.clone();
+        process_slot_vote_unchecked(&mut vote_state, slot);
+
+        // Assemble all the vote thresholds and depths to check.
+        let vote_thresholds_and_depths: Vec<(usize, f64)> = vec![
+            // The following two checks are log only and are currently being used for experimentation
+            // purposes. We wish to impose a shallow threshold check to prevent the frequent 8 deep
+            // lockouts seen multiple times a day. We check both the 4th and 5th deep here to collect
+            // metrics to determine the right depth and threshold percentage to set in the future.
+            (VOTE_THRESHOLD_DEPTH_SHALLOW, SWITCH_FORK_THRESHOLD),
+            (VOTE_THRESHOLD_DEPTH_SHALLOW + 1, SWITCH_FORK_THRESHOLD),
+            (self.threshold_depth, self.threshold_size),
+        ];
+
+        // Check one by one and add any failures to be returned
+        for (threshold_depth, threshold_size) in vote_thresholds_and_depths {
+            let threshold_vote = vote_state.nth_recent_lockout(threshold_depth);
+            let slot_to_check = threshold_vote.map(|lockout| lockout.slot()).unwrap_or(slot);
+            let stats = progress
+                .get_fork_stats(slot_to_check)
+                .expect("All frozen banks must exist in the Progress map");
+            if let ThresholdDecision::FailedThreshold(vote_depth, stake) =
+                Self::check_vote_stake_threshold(
+                    threshold_vote,
+                    &self.vote_state,
+                    threshold_depth,
+                    threshold_size,
+                    slot,
+                    &stats.voted_stakes,
+                    stats.total_stake,
+                )
+            {
+                threshold_decisions.push(ThresholdDecision::FailedThreshold(vote_depth, stake));
+            }
+        }
+        threshold_decisions
+    }
+
     /// Performs vote threshold checks for `slot`
     pub fn check_vote_stake_thresholds(
         &self,

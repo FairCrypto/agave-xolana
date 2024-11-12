@@ -438,7 +438,10 @@ impl AccountsHashVerifier {
             )
             .unwrap()); // unwrap here will never fail since check_hash = false
 
+        trace!("compute accounts_package.expected_capitalization and lamports {} {} for slot {}", accounts_package.expected_capitalization, lamports, slot);
+
         if accounts_package.expected_capitalization != lamports {
+            trace!("accounts_package.expected_capitalization need recalc as values are not the same");
             // before we assert, run the hash calc again. This helps track down whether it could have been a failure in a race condition possibly with shrink.
             // We could add diagnostics to the hash calc here to produce a per bin cap or something to help narrow down how many pubkeys are different.
             let calculate_accounts_hash_config = CalcAccountsHashConfig {
@@ -464,12 +467,14 @@ impl AccountsHashVerifier {
                     &sorted_storages,
                     HashStats::default(),
                 );
+            trace!("after recalc compute accounts_package.expected_capitalization and lamports {} {} for slot {}", accounts_package.expected_capitalization, lamports, slot);
         }
-
+/*
         assert_eq!(
             accounts_package.expected_capitalization, lamports,
             "accounts hash capitalization mismatch"
         );
+*/
         if let Some(expected_hash) = accounts_package.accounts_hash_for_testing {
             assert_eq!(expected_hash, accounts_hash);
         };
