@@ -15,7 +15,7 @@ use {
         },
     },
     solana_entry::poh::compute_hashes_per_tick,
-    solana_genesis::{genesis_accounts::add_genesis_accounts, Base64Account},
+    solana_genesis::Base64Account,
     solana_ledger::{blockstore::create_new_ledger, blockstore_options::LedgerColumnOptions},
     solana_sdk::{
         account::{Account, AccountSharedData, ReadableAccount, WritableAccount},
@@ -577,7 +577,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         );
     }
 
-    solana_stake_program::add_genesis_accounts(&mut genesis_config);
     if genesis_config.cluster_type == ClusterType::Development {
         solana_runtime::genesis_utils::activate_all_features(&mut genesis_config);
     }
@@ -590,14 +589,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let max_genesis_archive_unpacked_size =
         value_t_or_exit!(matches, "max_genesis_archive_unpacked_size", u64);
-
-    let issued_lamports = genesis_config
-        .accounts
-        .values()
-        .map(|account| account.lamports)
-        .sum::<u64>();
-
-    add_genesis_accounts(&mut genesis_config, issued_lamports - faucet_lamports);
 
     let parse_address = |address: &str, input_type: &str| {
         address.parse::<Pubkey>().unwrap_or_else(|err| {

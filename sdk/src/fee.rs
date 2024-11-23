@@ -1,8 +1,100 @@
 //! Fee structures.
 
+use std::collections::{HashMap};
+use std::str::FromStr;
+
+use lazy_static::lazy_static;
 use crate::native_token::sol_to_lamports;
+use log::trace;
+use solana_program::borsh1::try_from_slice_unchecked;
+
 #[cfg(not(target_os = "solana"))]
 use solana_program::message::SanitizedMessage;
+use solana_program::pubkey::Pubkey;
+use crate::{compute_budget};
+use crate::compute_budget::ComputeBudgetInstruction;
+
+pub const COMPUTE_UNIT_TO_US_RATIO: u64 = 30;
+pub const SIGNATURE_COST: u64 = COMPUTE_UNIT_TO_US_RATIO * 24;
+pub const SECP256K1_VERIFY_COST: u64 = COMPUTE_UNIT_TO_US_RATIO * 223;
+pub const ED25519_VERIFY_COST: u64 = COMPUTE_UNIT_TO_US_RATIO * 76;
+pub const WRITE_LOCK_UNITS: u64 = COMPUTE_UNIT_TO_US_RATIO * 10;
+pub const DEFAULT_INSTRUCTION_COMPUTE_UNIT_LIMIT: u32 = 200_000;
+pub const MAX_COMPUTE_UNIT_LIMIT: u32 = 1_400_000;
+pub const HEAP_LENGTH: usize = 32 * 1024;
+pub const MAX_LOADED_ACCOUNTS_DATA_SIZE_BYTES: u32 = 64 * 1024 * 1024;
+
+lazy_static! {
+    pub static ref BUILT_IN_INSTRUCTION_COSTS: HashMap<Pubkey, u64> = [
+        (Pubkey::from_str("Stake11111111111111111111111111111111111111").unwrap(), 750u64),
+        (Pubkey::from_str("Config1111111111111111111111111111111111111").unwrap(), 450u64),
+        (Pubkey::from_str("Vote111111111111111111111111111111111111111").unwrap(), 2_100u64),
+        (Pubkey::from_str("11111111111111111111111111111111").unwrap(), 150u64),
+        (Pubkey::from_str("ComputeBudget111111111111111111111111111111").unwrap(), 150u64),
+        (Pubkey::from_str("AddressLookupTab1e1111111111111111111111111").unwrap(), 750u64),
+        (Pubkey::from_str("BPFLoaderUpgradeab1e11111111111111111111111").unwrap(), 2_370u64),
+        (Pubkey::from_str("BPFLoader1111111111111111111111111111111111").unwrap(), 1_140u64),
+        (Pubkey::from_str("BPFLoader2111111111111111111111111111111111").unwrap(), 570u64),
+        (Pubkey::from_str("LoaderV411111111111111111111111111111111111").unwrap(), 2_000u64),
+        // Note: These are precompile, run directly in bank during sanitizing;
+        (Pubkey::from_str("KeccakSecp256k11111111111111111111111111111").unwrap(), 0u64),
+        (Pubkey::from_str("Ed25519SigVerify111111111111111111111111111").unwrap(), 0u64)
+    ]
+    .iter()
+    .cloned()
+    .collect();
+}
+
+fn get_compute_unit_price_from_message(
+    message: &SanitizedMessage,
+) -> u64 {
+    let mut compute_unit_price = 0u64;
+    // Iterate through instructions and search for ComputeBudgetInstruction::SetComputeUnitPrice
+    for (program_id, instruction) in message.program_instructions_iter() {
+        if compute_budget::check_id(program_id) {
+            if let Ok(ComputeBudgetInstruction::SetComputeUnitPrice(price)) =
+                try_from_slice_unchecked(&instruction.data)
+            {
+                // Set the compute unit price in tx_cost
+                compute_unit_price = price;
+            }
+        }
+    }
+    compute_unit_price
+}
+
+fn get_transaction_cost(
+    message: &SanitizedMessage,
+    budget_limits: &FeeBudgetLimits
+) -> u64 {
+    let mut builtin_costs = 0u64;
+    let mut bpf_costs = 0u64;
+    let mut compute_unit_limit_is_set = false;
+
+    for (program_id, instruction) in message.program_instructions_iter() {
+        // to keep the same behavior, look for builtin first
+        if let Some(builtin_cost) = BUILT_IN_INSTRUCTION_COSTS.get(program_id) {
+            builtin_costs = builtin_costs.saturating_add(*builtin_cost);
+        } else {
+            bpf_costs = bpf_costs
+                .saturating_add(u64::from(DEFAULT_INSTRUCTION_COMPUTE_UNIT_LIMIT))
+                .min(u64::from(MAX_COMPUTE_UNIT_LIMIT));
+        }
+        if compute_budget::check_id(program_id) {
+            if let Ok(ComputeBudgetInstruction::SetComputeUnitLimit(_)) =
+                try_from_slice_unchecked(&instruction.data)
+            {
+                compute_unit_limit_is_set = true;
+            }
+        }
+    }
+
+    if bpf_costs > 0 && compute_unit_limit_is_set {
+        bpf_costs = budget_limits.compute_unit_limit
+    }
+
+    builtin_costs.saturating_add(bpf_costs)
+}
 
 /// A fee and its associated compute unit limit
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
@@ -39,6 +131,7 @@ impl FeeStructure {
         sol_per_write_lock: f64,
         compute_fee_bins: Vec<(u64, f64)>,
     ) -> Self {
+        trace!("Creating FeeStructure with sol_per_signature: {}", sol_per_signature);
         let compute_fee_bins = compute_fee_bins
             .iter()
             .map(|(limit, sol)| FeeBin {
@@ -54,7 +147,7 @@ impl FeeStructure {
     }
 
     pub fn get_max_fee(&self, num_signatures: u64, num_write_locks: u64) -> u64 {
-        num_signatures
+        let max_fee = num_signatures
             .saturating_mul(self.lamports_per_signature)
             .saturating_add(num_write_locks.saturating_mul(self.lamports_per_write_lock))
             .saturating_add(
@@ -62,17 +155,21 @@ impl FeeStructure {
                     .last()
                     .map(|bin| bin.fee)
                     .unwrap_or_default(),
-            )
+            );
+        trace!("Calculated max_fee: {}", max_fee);
+        max_fee
     }
 
     pub fn calculate_memory_usage_cost(
         loaded_accounts_data_size_limit: usize,
         heap_cost: u64,
     ) -> u64 {
-        (loaded_accounts_data_size_limit as u64)
+        let memory_usage_cost = (loaded_accounts_data_size_limit as u64)
             .saturating_add(ACCOUNT_DATA_COST_PAGE_SIZE.saturating_sub(1))
             .saturating_div(ACCOUNT_DATA_COST_PAGE_SIZE)
-            .saturating_mul(heap_cost)
+            .saturating_mul(heap_cost);
+        trace!("Calculated memory_usage_cost: {}", memory_usage_cost);
+        memory_usage_cost
     }
 
     /// Calculate fee for `SanitizedMessage`
@@ -80,61 +177,37 @@ impl FeeStructure {
     pub fn calculate_fee(
         &self,
         message: &SanitizedMessage,
-        lamports_per_signature: u64,
+        _lamports_per_signature: u64,
         budget_limits: &FeeBudgetLimits,
-        include_loaded_account_data_size_in_fee: bool,
+        _include_loaded_account_data_size_in_fee: bool,
     ) -> u64 {
-        // Fee based on compute units and signatures
-        let congestion_multiplier = if lamports_per_signature == 0 {
-            0.0 // test only
+        // If the message contains the vote program, set the total fee to 0.
+        if message.account_keys().iter()
+            .any(|key| key == &solana_sdk::vote::program::id()) {
+            return 0
+        }
+
+        let derived_cu = get_transaction_cost(&message, budget_limits);
+        let compute_unit_price = get_compute_unit_price_from_message(&message);
+        let adjusted_compute_unit_price = if derived_cu < 1000 && compute_unit_price < 1_000_000 {
+            1_000_000
         } else {
-            1.0 // multiplier that has no effect
+            compute_unit_price
         };
 
-        let signature_fee = message
-            .num_signatures()
-            .saturating_mul(self.lamports_per_signature);
-        let write_lock_fee = message
-            .num_write_locks()
-            .saturating_mul(self.lamports_per_write_lock);
+        let total_fee = derived_cu
+            .saturating_mul(10) // ensures multiplication doesn't overflow
+            .saturating_add(derived_cu.saturating_mul(adjusted_compute_unit_price)
+                .saturating_div(1_000_000)); // change to 1_000_000 to convert to micro lamports
 
-        // `compute_fee` covers costs for both requested_compute_units and
-        // requested_loaded_account_data_size
-        let loaded_accounts_data_size_cost = if include_loaded_account_data_size_in_fee {
-            FeeStructure::calculate_memory_usage_cost(
-                budget_limits.loaded_accounts_data_size_limit,
-                budget_limits.heap_cost,
-            )
-        } else {
-            0_u64
-        };
-        let total_compute_units =
-            loaded_accounts_data_size_cost.saturating_add(budget_limits.compute_unit_limit);
-        let compute_fee = self
-            .compute_fee_bins
-            .iter()
-            .find(|bin| total_compute_units <= bin.limit)
-            .map(|bin| bin.fee)
-            .unwrap_or_else(|| {
-                self.compute_fee_bins
-                    .last()
-                    .map(|bin| bin.fee)
-                    .unwrap_or_default()
-            });
-
-        ((budget_limits
-            .prioritization_fee
-            .saturating_add(signature_fee)
-            .saturating_add(write_lock_fee)
-            .saturating_add(compute_fee) as f64)
-            * congestion_multiplier)
-            .round() as u64
+        trace!("total_fee: {}", total_fee);
+        total_fee
     }
 }
 
 impl Default for FeeStructure {
     fn default() -> Self {
-        Self::new(0.000005, 0.0, vec![(1_400_000, 0.0)])
+        Self::new(0.000000005, 0.0, vec![(1_400_000, 0.0)])
     }
 }
 
@@ -181,3 +254,4 @@ mod tests {
         );
     }
 }
+
