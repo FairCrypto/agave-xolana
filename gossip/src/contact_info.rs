@@ -181,7 +181,11 @@ impl ContactInfo {
         Self {
             pubkey,
             wallclock,
-            outset: get_node_outset(),
+            outset: {
+                let now = SystemTime::now();
+                let elapsed = now.duration_since(UNIX_EPOCH).unwrap();
+                u64::try_from(elapsed.as_micros()).unwrap()
+            },
             shred_version,
             version: solana_version::Version::default(),
             addrs: Vec::<IpAddr>::default(),
@@ -206,11 +210,8 @@ impl ContactInfo {
         self.shred_version
     }
 
-    pub fn hot_swap_pubkey(&mut self, pubkey: Pubkey) {
-        self.pubkey = pubkey;
-        // Need to update ContactInfo.outset so that this node's contact-info
-        // will override older node with the same pubkey.
-        self.outset = get_node_outset();
+    pub fn set_pubkey(&mut self, pubkey: Pubkey) {
+        self.pubkey = pubkey
     }
 
     pub fn set_wallclock(&mut self, wallclock: u64) {
@@ -406,12 +407,6 @@ impl ContactInfo {
         node.set_serve_repair_quic((addr, port + 4)).unwrap();
         node
     }
-}
-
-fn get_node_outset() -> u64 {
-    let now = SystemTime::now();
-    let elapsed = now.duration_since(UNIX_EPOCH).unwrap();
-    u64::try_from(elapsed.as_micros()).unwrap()
 }
 
 impl<'de> Deserialize<'de> for ContactInfo {

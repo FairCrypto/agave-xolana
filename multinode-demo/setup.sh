@@ -36,6 +36,7 @@ args=(
   "$@"
   --max-genesis-archive-unpacked-size 1073741824
   --enable-warmup-epochs
+  --slots-per-epoch 1000
   --bootstrap-validator "$SOLANA_CONFIG_DIR"/bootstrap-validator/identity.json
                         "$SOLANA_CONFIG_DIR"/bootstrap-validator/vote-account.json
                         "$SOLANA_CONFIG_DIR"/bootstrap-validator/stake-account.json
@@ -43,7 +44,7 @@ args=(
 
 "$SOLANA_ROOT"/fetch-spl.sh
 if [[ -r spl-genesis-args.sh ]]; then
-  SPL_GENESIS_ARGS=$(cat "$SOLANA_ROOT"/spl-genesis-args.sh)
+  SPL_GENESIS_ARGS=$(cat ../multinode-demo/spl-genesis-args.sh)
   #shellcheck disable=SC2207
   #shellcheck disable=SC2206
   args+=($SPL_GENESIS_ARGS)
@@ -52,7 +53,10 @@ fi
 default_arg --ledger "$SOLANA_CONFIG_DIR"/bootstrap-validator
 default_arg --faucet-pubkey "$SOLANA_CONFIG_DIR"/faucet.json
 default_arg --faucet-lamports 500000000000000000
+default_arg --inflation none
 default_arg --hashes-per-tick auto
+default_arg --target-lamports-per-signature 100 
+default_arg --target-signatures-per-slot 5
 default_arg --cluster-type development
 
 $solana_genesis "${args[@]}"
