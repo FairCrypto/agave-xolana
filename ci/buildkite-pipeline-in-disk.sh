@@ -132,7 +132,7 @@ wait_step() {
 }
 
 all_test_steps() {
-  command_step checks ". ci/rust-version.sh; ci/docker-run.sh \$\$rust_nightly_docker_image ci/test-checks.sh" 20
+  command_step checks ". ci/rust-version.sh; ci/docker-run.sh \$\$ci_docker_image ci/test-checks.sh" 20
   wait_step
 
   # Coverage...
@@ -144,7 +144,7 @@ all_test_steps() {
              ^ci/test-coverage.sh \
              ^scripts/coverage.sh \
       ; then
-    command_step coverage ". ci/rust-version.sh; ci/docker-run.sh \$\$rust_nightly_docker_image ci/test-coverage.sh" 80
+    command_step coverage ". ci/rust-version.sh; ci/docker-run.sh \$\$ci_docker_image ci/test-coverage.sh" 80
     wait_step
   else
     annotate --style info --context test-coverage \
@@ -159,7 +159,7 @@ all_test_steps() {
              ^ci/test-coverage.sh \
              ^scripts/coverage-in-disk.sh \
       ; then
-    command_step coverage-in-disk ". ci/rust-version.sh; ci/docker-run.sh \$\$rust_nightly_docker_image ci/test-coverage.sh" 80
+    command_step coverage-in-disk ". ci/rust-version.sh; ci/docker-run.sh \$\$ci_docker_image ci/test-coverage.sh" 80
     wait_step
   else
     annotate --style info --context test-coverage \
