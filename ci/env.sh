@@ -45,14 +45,14 @@ if [[ -n $CI ]]; then
     esac
 
     if [[ -n $BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG ]]; then
-      # The solana-secondary pipeline should use the slug of the pipeline that
+      # The tachyon-secondary pipeline should use the slug of the pipeline that
       # triggered it
       export CI_REPO_SLUG=$BUILDKITE_ORGANIZATION_SLUG/$BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG
     else
       export CI_REPO_SLUG=$BUILDKITE_ORGANIZATION_SLUG/$BUILDKITE_PIPELINE_SLUG
     fi
     # TRIGGERED_BUILDKITE_TAG is a workaround to propagate BUILDKITE_TAG into
-    # the solana-secondary pipeline
+    # the tachyon-secondary pipeline
     if [[ -n $TRIGGERED_BUILDKITE_TAG ]]; then
       export CI_TAG=$TRIGGERED_BUILDKITE_TAG
     else

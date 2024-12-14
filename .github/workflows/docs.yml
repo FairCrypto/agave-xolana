@@ -69,7 +69,7 @@ jobs:
     needs:
       - check
     if: >
-      github.repository == 'anza-xyz/agave' &&
+      github.repository == 'x1-labs/tachyon' &&
       needs.check.outputs.continue == 1
     # the name is used by .mergify.yml as well
     name: build & deploy docs
