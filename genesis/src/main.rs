@@ -5,7 +5,7 @@ use {
     base64::{prelude::BASE64_STANDARD, Engine},
     clap::{crate_description, crate_name, value_t, value_t_or_exit, App, Arg, ArgMatches},
     itertools::Itertools,
-    solana_accounts_db::hardened_unpack::MAX_GENESIS_ARCHIVE_UNPACKED_SIZE,
+    solana_accounts_db::{hardened_unpack::MAX_GENESIS_ARCHIVE_UNPACKED_SIZE, inline_spl_token},
     solana_clap_utils::{
         input_parsers::{
             cluster_type_of, pubkey_of, pubkeys_of, unix_timestamp_from_rfc3339_datetime,
@@ -580,6 +580,18 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     solana_stake_program::add_genesis_accounts(&mut genesis_config);
     if genesis_config.cluster_type == ClusterType::Development {
         solana_runtime::genesis_utils::activate_all_features(&mut genesis_config);
+
+        // Add the native mint account which was activated as a feature gate.
+        genesis_config.add_account(
+            inline_spl_token::native_mint::id(),
+            solana_sdk::account::AccountSharedData::from(Account {
+                owner: inline_spl_token::id(),
+                data: inline_spl_token::native_mint::ACCOUNT_DATA.to_vec(),
+                lamports: sol_to_lamports(1.0),
+                executable: false,
+                rent_epoch: 1,
+            }),
+        );
     }
 
     if let Some(files) = matches.values_of("primordial_accounts_file") {

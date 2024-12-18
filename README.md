@@ -1,17 +1,8 @@
-<p align="center">
-  <a href="https://solana.com">
-    <img alt="Solana" src="https://i.imgur.com/0vfIMHo.png" width="250" />
-  </a>
-</p>
+# X1: Tachyon Validator Node
 
-[![Solana crate](https://img.shields.io/crates/v/solana-core.svg)](https://crates.io/crates/solana-core)
-[![Solana documentation](https://docs.rs/solana-core/badge.svg)](https://docs.rs/solana-core)
-[![Build status](https://badge.buildkite.com/8cc350de251d61483db98bdfc895b9ea0ac8ffa4a32ee850ed.svg?branch=master)](https://buildkite.com/solana-labs/solana/builds?branch=master)
-[![codecov](https://codecov.io/gh/solana-labs/solana/branch/master/graph/badge.svg)](https://codecov.io/gh/solana-labs/solana)
+## Building
 
-# Building
-
-## **1. Install rustc, cargo and rustfmt.**
+### **1. Install rustc, cargo and rustfmt.**
 
 ```bash
 $ curl https://sh.rustup.rs -sSf | sh
@@ -44,20 +35,20 @@ On Fedora:
 $ sudo dnf install openssl-devel systemd-devel pkg-config zlib-devel llvm clang cmake make protobuf-devel protobuf-compiler perl-core
 ```
 
-## **2. Download the source code.**
+### **2. Download the source code.**
 
 ```bash
-$ git clone https://github.com/solana-labs/solana.git
-$ cd solana
+$ git clone https://github.com/x1-labs/tachyon.git
+$ cd tachyon
 ```
 
-## **3. Build.**
+### **3. Build.**
 
 ```bash
 $ ./cargo build
 ```
 
-# Testing
+## Testing
 
 **Run the test suite:**
 
@@ -65,16 +56,12 @@ $ ./cargo build
 $ ./cargo test
 ```
 
-### Starting a local testnet
+#### Accessing the remote testnet cluster
 
-Start your own testnet locally, instructions are in the [online docs](https://docs.solanalabs.com/clusters/benchmark).
+* `testnet` - stable public cluster for development accessible via
+https://xolana.xen.network
 
-### Accessing the remote development cluster
-
-* `devnet` - stable public cluster for development accessible via
-devnet.solana.com. Runs 24/7. Learn more about the [public clusters](https://docs.solanalabs.com/clusters)
-
-# Benchmarking
+## Benchmarking
 
 First, install the nightly build of rustc. `cargo bench` requires the use of the
 unstable features only available in the nightly build.
@@ -89,11 +76,11 @@ Run the benchmarks:
 $ cargo +nightly bench
 ```
 
-# Release Process
+## Release Process
 
 The release process for this project is described [here](RELEASE.md).
 
-# Code coverage
+## Code coverage
 
 To generate code coverage statistics:
 

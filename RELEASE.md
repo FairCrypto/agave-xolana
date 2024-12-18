@@ -1,4 +1,4 @@
-# Solana Release process
+# Tachyon Release process
 
 ## Branches and Tags
 
@@ -143,7 +143,7 @@ appearing.  To check for progress:
 * The `solana-secondary` Buildkite pipeline handles creating the Linux and macOS release artifacts and updated crates.  Look for a job under the tag name of the release: https://buildkite.com/solana-labs/solana-secondary.
 * The Windows release artifacts are produced by GitHub Actions.  Look for a job under the tag name of the release: https://github.com/solana-labs/solana/actions.
 
-[Crates.io](https://crates.io/crates/solana) should have an updated Solana version.  This can take 2-3 hours, and sometimes fails in the `solana-secondary` job.
+[Crates.io tachyon-validator](https://crates.io/crates/tachyon-validator) should have an updated tachyon-validator version.  This can take 2-3 hours, and sometimes fails in the `agave-secondary` job.
 If this happens and the error is non-fatal, click "Retry" on the "publish crate" job
 
 ### Update software on testnet.solana.com

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release-artifacts:
-    if: github.repository == 'anza-xyz/agave'
+    if: github.repository == 'FairCrypto/agave-xolana'
     uses: ./.github/workflows/release-artifacts.yml
     with:
       commit: ${{ github.sha }}

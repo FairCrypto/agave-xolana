@@ -116,8 +116,8 @@ EOF
 
 # trigger_secondary_step() {
 #   cat  >> "$output_file" <<"EOF"
-#   - name: "Trigger Build on solana-secondary"
-#     trigger: "solana-secondary"
+#   - name: "Trigger Build on x1-agave-secondary"
+#     trigger: "x1-agave-secondary"
 #     branches: "!pull/*"
 #     async: true
 #     build:
@@ -287,7 +287,7 @@ if [[ $BUILDKITE_BRANCH =~ ^pull ]]; then
 
   # Add helpful link back to the corresponding Github Pull Request
   annotate --style info --context pr-backlink \
-    "Github Pull Request: https://github.com/anza-xyz/agave/$BUILDKITE_BRANCH"
+    "Github Pull Request: https://github.com/FairCrypto/agave-xolana/$BUILDKITE_BRANCH"
 
   if [[ $GITHUB_USER = "dependabot[bot]" ]]; then
     command_step dependabot "ci/dependabot-pr.sh" 5

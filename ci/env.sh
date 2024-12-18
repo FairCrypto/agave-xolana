@@ -21,6 +21,14 @@ if [[ -n $CI ]]; then
     export CI_REPO_SLUG=$TRAVIS_REPO_SLUG
     export CI_TAG=$TRAVIS_TAG
   elif [[ -n $BUILDKITE ]]; then
+    AWS_ACCESS_KEY_ID="$(buildkite-agent secret get AWS_ACCESS_KEY_ID)"
+    AWS_SECRET_ACCESS_KEY="$(buildkite-agent secret get AWS_SECRET_ACCESS_KEY)"
+    SCCACHE_BUCKET="$(buildkite-agent secret get SCCACHE_BUCKET)"
+    SCCACHE_REGION="$(buildkite-agent secret get SCCACHE_REGION)"
+    export AWS_ACCESS_KEY_ID
+    export AWS_SECRET_ACCESS_KEY
+    export SCCACHE_BUCKET
+    export SCCACHE_REGION
     export CI_BRANCH=$BUILDKITE_BRANCH
     export CI_BUILD_ID=$BUILDKITE_BUILD_ID
     if [[ $BUILDKITE_COMMIT = HEAD ]]; then
@@ -31,7 +39,7 @@ if [[ -n $CI ]]; then
     # The standard BUILDKITE_PULL_REQUEST environment variable is always "false" due
     # to how solana-ci-gate is used to trigger PR builds rather than using the
     # standard Buildkite PR trigger.
-    if [[ $CI_BRANCH =~ pull/* ]]; then
+    if [[ $CI_BRANCH =~ pull/* ]] || [[ -n $BUILDKITE_PULL_REQUEST_BASE_BRANCH ]]; then
       export CI_BASE_BRANCH=$BUILDKITE_PULL_REQUEST_BASE_BRANCH
       export CI_PULL_REQUEST=true
     else
@@ -51,14 +59,14 @@ if [[ -n $CI ]]; then
     esac
 
     if [[ -n $BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG ]]; then
-      # The solana-secondary pipeline should use the slug of the pipeline that
+      # The x1-agave-secondary pipeline should use the slug of the pipeline that
       # triggered it
       export CI_REPO_SLUG=$BUILDKITE_ORGANIZATION_SLUG/$BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG
     else
       export CI_REPO_SLUG=$BUILDKITE_ORGANIZATION_SLUG/$BUILDKITE_PIPELINE_SLUG
     fi
     # TRIGGERED_BUILDKITE_TAG is a workaround to propagate BUILDKITE_TAG into
-    # the solana-secondary pipeline
+    # the x1-agave-secondary pipeline
     if [[ -n $TRIGGERED_BUILDKITE_TAG ]]; then
       export CI_TAG=$TRIGGERED_BUILDKITE_TAG
     else

@@ -2,6 +2,8 @@
 
 export INDENT_LEVEL=2
 
+. ci/rust-version.sh
+
 indent() {
   local indent=${1:-"$INDENT_LEVEL"}
   sed "s/^/$(printf ' %.0s' $(seq 1 "$indent"))/"
@@ -69,6 +71,20 @@ EOF
   cat <<EOF | indent | sed '/DELETE_THIS_LINE/d'
 - name: "$name"
   command: "$command"
+  plugins:
+    - docker#v5.12.0:
+        image: "$rust_nightly_docker_image"
+        workdir: /solana
+        propagate-environment: true
+        propagate-uid-gid: true
+        environment:
+          - "RUSTC_WRAPPER=/usr/local/cargo/bin/sccache"
+          - BUILDKITE_AGENT_ACCESS_TOKEN
+          - AWS_SECRET_ACCESS_KEY
+          - AWS_ACCESS_KEY_ID
+          - SCCACHE_BUCKET
+          - SCCACHE_REGION
+          - SCCACHE_S3_KEY_PREFIX
   timeout_in_minutes: $timeout_in_minutes
   agents:
     queue: "$agent"

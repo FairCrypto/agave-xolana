@@ -307,7 +307,7 @@ not start without the settings below.
 #### **Optimize sysctl knobs**
 
 ```bash
-sudo bash -c "cat >/etc/sysctl.d/21-agave-validator.conf <<EOF
+sudo bash -c "cat >/etc/sysctl.d/21-tachyon-validator.conf <<EOF
 # Increase UDP buffer sizes
 net.core.rmem_default = 134217728
 net.core.rmem_max = 134217728
@@ -323,7 +323,7 @@ EOF"
 ```
 
 ```bash
-sudo sysctl -p /etc/sysctl.d/21-agave-validator.conf
+sudo sysctl -p /etc/sysctl.d/21-tachyon-validator.conf
 ```
 
 #### **Increase systemd and session file limits**
@@ -409,7 +409,7 @@ nano /home/sol/bin/validator.sh
 Copy and paste the following contents into `validator.sh` then save the file:
 
 ```
-exec agave-validator \
+exec tachyon-validator \
     --identity validator-keypair.json \
     --vote-account vote-account-keypair.json \
     --known-validator 5D1fNXzvv5NjV1ysLjirC4WY92RNsVH18vjmcszZd8on \
@@ -417,7 +417,7 @@ exec agave-validator \
     --known-validator Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN \
     --known-validator 9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv \
     --only-known-rpc \
-    --log /home/sol/agave-validator.log \
+    --log /home/sol/tachyon-validator.log \
     --ledger /mnt/ledger \
     --rpc-port 8899 \
     --dynamic-port-range 8000-8020 \
@@ -429,7 +429,7 @@ exec agave-validator \
     --limit-ledger-size
 ```
 
-Refer to `agave-validator --help` for more information on what each flag is
+Refer to `tachyon-validator --help` for more information on what each flag is
 doing in this script. Also refer to the section on
 [best practices for operating a validator](./best-practices/general.md).
 
@@ -442,14 +442,14 @@ Test that your `validator.sh` file is running properly by executing the
 /home/sol/bin/validator.sh
 ```
 
-The script should execute the `agave-validator` process. In a new terminal
+The script should execute the `tachyon-validator` process. In a new terminal
 window, shh into your server, then verify that the process is running:
 
 ```
-ps aux | grep agave-validator
+ps aux | grep tachyon-validator
 ```
 
-You should see a line in the output that includes `agave-validator` with all
+You should see a line in the output that includes `tachyon-validator` with all
 the flags that were added to your `validator.sh` script.
 
 Next, we need to look at the logs to make sure everything is operating properly.
@@ -464,7 +464,7 @@ In a new terminal window, ssh into your validator machine, switch users to the
 
 ```
 su - sol
-tail -f agave-validator.log
+tail -f tachyon-validator.log
 ```
 
 The `tail` command will continue to display the output of a file as the file
@@ -567,7 +567,7 @@ Now verify that the validator is running properly by tailing the logs and using
 the commands mentioned earlier to check gossip and Solana validators:
 
 ```
-tail -f /home/sol/agave-validator*.log
+tail -f /home/sol/tachyon-validator*.log
 ```
 
 ## Monitoring

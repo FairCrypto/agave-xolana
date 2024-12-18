@@ -789,8 +789,12 @@ pub mod deprecate_unused_legacy_vote_plumbing {
     solana_sdk::declare_id!("6Uf8S75PVh91MYgPQSHnjRAPQq6an5BDv9vomrCwDqLe");
 }
 
-pub mod enable_turbine_extended_fanout_experiments {
-    solana_sdk::declare_id!("BZn14Liea52wtBwrXUxTv6vojuTTmfc7XGEDTXrvMD7b");
+pub mod enable_native_mint_wrap_account {
+    solana_sdk::declare_id!("BeCY6VL4CKQR2QUwe9w3iRtNMN91FMW1sXbRzwfc3WYc");
+}
+
+pub mod deactivate_canceled_partitioned_epoch_reward {
+    solana_sdk::declare_id!("3sioPumDoSRarqzp442ETGUvTCLADgU9eFzKJj375B23");
 }
 
 lazy_static! {
@@ -985,7 +989,8 @@ lazy_static! {
         (enable_chained_merkle_shreds::id(), "Enable chained Merkle shreds #34916"),
         (deprecate_unused_legacy_vote_plumbing::id(), "Deprecate unused legacy vote tx plumbing"),
         (chained_merkle_conflict_duplicate_proofs::id(), "generate duplicate proofs for chained merkle root conflicts"),
-        (enable_turbine_extended_fanout_experiments::id(), "enable turbine extended fanout experiments #2373"),
+        (enable_native_mint_wrap_account::id(), "enable the native mint wrap account"),
+        (deactivate_canceled_partitioned_epoch_reward::id(), "deactivate canceled partitioned epoch reward"),
         /*************** ADD NEW FEATURES HERE ***************/
     ]
     .iter()

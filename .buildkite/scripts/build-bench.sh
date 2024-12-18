@@ -13,7 +13,7 @@ build_steps() {
 {
   "name": "$1",
   "command": "$2",
-  "timeout_in_minutes": 30,
+  "timeout_in_minutes": 60,
   "agent": "$agent",
   "retry": 3
 }
@@ -22,5 +22,5 @@ EOF
 
 # shellcheck disable=SC2016
 group "bench" \
-  "$(build_steps "bench-part-1" ". ci/rust-version.sh; ci/docker-run.sh \$\$rust_nightly_docker_image ci/bench/part1.sh")" \
-  "$(build_steps "bench-part-2" ". ci/rust-version.sh; ci/docker-run.sh \$\$rust_nightly_docker_image ci/bench/part2.sh")"
+  "$(build_steps "bench-part-1" "ci/bench/part1.sh")" \
+  "$(build_steps "bench-part-2" "ci/bench/part2.sh")"

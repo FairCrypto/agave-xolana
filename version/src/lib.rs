@@ -18,6 +18,7 @@ enum ClientId {
     JitoLabs,
     Firedancer,
     Agave,
+    Tachyon,
     // If new variants are added, update From<u16> and TryFrom<ClientId>.
     Unknown(u16),
 }
@@ -64,7 +65,7 @@ impl Default for Version {
             commit: compute_commit(option_env!("CI_COMMIT")).unwrap_or_default(),
             feature_set,
             // Other client implementations need to modify this line.
-            client: u16::try_from(ClientId::Agave).unwrap(),
+            client: u16::try_from(ClientId::Tachyon).unwrap(),
         }
     }
 }
@@ -99,6 +100,7 @@ impl From<u16> for ClientId {
             1u16 => Self::JitoLabs,
             2u16 => Self::Firedancer,
             3u16 => Self::Agave,
+            4u16 => Self::Tachyon,
             _ => Self::Unknown(client),
         }
     }
@@ -113,6 +115,7 @@ impl TryFrom<ClientId> for u16 {
             ClientId::JitoLabs => Ok(1u16),
             ClientId::Firedancer => Ok(2u16),
             ClientId::Agave => Ok(3u16),
+            ClientId::Tachyon => Ok(4u16),
             ClientId::Unknown(client @ 0u16..=3u16) => Err(format!("Invalid client: {client}")),
             ClientId::Unknown(client) => Ok(client),
         }
@@ -151,20 +154,22 @@ mod test {
         assert_eq!(ClientId::from(1u16), ClientId::JitoLabs);
         assert_eq!(ClientId::from(2u16), ClientId::Firedancer);
         assert_eq!(ClientId::from(3u16), ClientId::Agave);
-        for client in 4u16..=u16::MAX {
+        assert_eq!(ClientId::from(4u16), ClientId::Tachyon);
+        for client in 5u16..=u16::MAX {
             assert_eq!(ClientId::from(client), ClientId::Unknown(client));
         }
         assert_eq!(u16::try_from(ClientId::SolanaLabs), Ok(0u16));
         assert_eq!(u16::try_from(ClientId::JitoLabs), Ok(1u16));
         assert_eq!(u16::try_from(ClientId::Firedancer), Ok(2u16));
         assert_eq!(u16::try_from(ClientId::Agave), Ok(3u16));
-        for client in 0..=3u16 {
+        assert_eq!(u16::try_from(ClientId::Tachyon), Ok(4u16));
+        for client in 0..=4u16 {
             assert_eq!(
                 u16::try_from(ClientId::Unknown(client)),
                 Err(format!("Invalid client: {client}"))
             );
         }
-        for client in 4u16..=u16::MAX {
+        for client in 5u16..=u16::MAX {
             assert_eq!(u16::try_from(ClientId::Unknown(client)), Ok(client));
         }
     }

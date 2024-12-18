@@ -26,7 +26,7 @@ ok=true
 for program in solana-{faucet,genesis,keygen}; do
   $program -V || ok=false
 done
-agave-validator -V || ok=false
+tachyon-validator -V || ok=false
 
 $ok || {
   echo
@@ -117,7 +117,7 @@ args=(
   --no-os-network-limits-test
 )
 # shellcheck disable=SC2086
-agave-validator "${args[@]}" $SOLANA_RUN_SH_VALIDATOR_ARGS &
+tachyon-validator "${args[@]}" $SOLANA_RUN_SH_VALIDATOR_ARGS &
 validator=$!
 
 wait "$validator"

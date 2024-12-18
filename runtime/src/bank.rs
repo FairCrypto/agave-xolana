@@ -90,6 +90,7 @@ use {
         ancestors::{Ancestors, AncestorsForSerialization},
         blockhash_queue::BlockhashQueue,
         epoch_accounts_hash::EpochAccountsHash,
+        inline_spl_token,
         nonce_info::{NonceInfo, NoncePartial},
         partitioned_rewards::PartitionedEpochRewardsConfig,
         rent_collector::{CollectedInfo, RentCollector, RENT_EXEMPT_RENT_EPOCH},
@@ -154,7 +155,7 @@ use {
         loader_v4::{self, LoaderV4State, LoaderV4Status},
         message::{AccountKeys, SanitizedMessage},
         native_loader,
-        native_token::LAMPORTS_PER_SOL,
+        native_token::{sol_to_lamports, LAMPORTS_PER_SOL},
         nonce::{self, state::DurableNonce, NONCED_TX_MARKER_IX_INDEX},
         nonce_account,
         packet::PACKET_DATA_SIZE,
@@ -1132,6 +1133,9 @@ impl Bank {
     fn is_partitioned_rewards_feature_enabled(&self) -> bool {
         self.feature_set
             .is_active(&feature_set::enable_partitioned_epoch_reward::id())
+            && !self
+                .feature_set
+                .is_active(&feature_set::deactivate_canceled_partitioned_epoch_reward::id())
     }
 
     pub(crate) fn set_epoch_reward_status_active(
@@ -7899,6 +7903,19 @@ impl Bank {
 
         if new_feature_activations.contains(&feature_set::update_hashes_per_tick6::id()) {
             self.apply_updated_hashes_per_tick(UPDATED_HASHES_PER_TICK6);
+        }
+
+        if new_feature_activations.contains(&feature_set::enable_native_mint_wrap_account::id()) {
+            self.store_account_and_update_capitalization(
+                &inline_spl_token::native_mint::id(),
+                &solana_sdk::account::AccountSharedData::from(Account {
+                    owner: inline_spl_token::id(),
+                    data: inline_spl_token::native_mint::ACCOUNT_DATA.to_vec(),
+                    lamports: sol_to_lamports(1.0),
+                    executable: false,
+                    rent_epoch: 1,
+                }),
+            );
         }
     }
 
