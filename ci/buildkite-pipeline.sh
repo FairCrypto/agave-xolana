@@ -183,140 +183,140 @@ wait_step() {
 
 all_test_steps() {
   . ci/rust-version.sh
-#  docker_command_step checks1 "ci/test-checks.sh" "$ci_docker_image" 20 check
-#  docker_command_step checks2 "ci/test-dev-context-only-utils.sh check-bins" "$ci_docker_image" 20 check
-#  docker_command_step checks3 "ci/test-dev-context-only-utils.sh check-all-targets" "$ci_docker_image" 30 check
-#  docker_command_step miri "ci/test-miri.sh" "$ci_docker_image" 5 check
-#  wait_step
-#
-#  # Full test suite
-#  .buildkite/scripts/build-stable.sh >> "$output_file"
+  docker_command_step checks1 "ci/test-checks.sh" "$ci_docker_image" 20 check
+  docker_command_step checks2 "ci/test-dev-context-only-utils.sh check-bins" "$ci_docker_image" 20 check
+  docker_command_step checks3 "ci/test-dev-context-only-utils.sh check-all-targets" "$ci_docker_image" 30 check
+  docker_command_step miri "ci/test-miri.sh" "$ci_docker_image" 5 check
+  wait_step
 
-#  # Docs tests
-#  if affects \
-#             .rs$ \
-#             Cargo.lock$ \
-#             Cargo.toml$ \
-#             ^ci/rust-version.sh \
-#             ^ci/test-docs.sh \
-#      ; then
-#    docker_command_step doctest "ci/test-docs.sh" "$ci_docker_image" 15
-#  else
-#    annotate --style info --context test-docs \
-#      "Docs skipped as no .rs files were modified"
-#  fi
-#  wait_step
-#
-#  # SBF test suite
-#  if affects \
-#             .rs$ \
-#             Cargo.lock$ \
-#             Cargo.toml$ \
-#             ^ci/rust-version.sh \
-#             ^ci/test-stable-sbf.sh \
-#             ^ci/test-stable.sh \
-#             ^ci/test-local-cluster.sh \
-#             ^core/build.rs \
-#             ^fetch-perf-libs.sh \
-#             ^programs/ \
-#             ^sdk/ \
-#             cargo-build-bpf$ \
-#             cargo-test-bpf$ \
-#             cargo-build-sbf$ \
-#             cargo-test-sbf$ \
-#      ; then
-#    cat >> "$output_file" <<"EOF"
-#  - command: "ci/test-stable-sbf.sh"
-#    plugins:
-#      - docker#v5.12.0:
-#          image: "$ci_docker_image"
-#          workdir: /solana
-#          propagate-environment: true
-#          propagate-uid-gid: true
-#          environment:
-#            - "RUSTC_WRAPPER=/usr/local/cargo/bin/sccache"
-#            - AWS_SECRET_ACCESS_KEY
-#            - AWS_ACCESS_KEY_ID
-#            - SCCACHE_BUCKET
-#            - SCCACHE_REGION
-#            - SCCACHE_S3_KEY_PREFIX
-#            - BUILDKITE_PARALLEL_JOB
-#            - BUILDKITE_PARALLEL_JOB_COUNT
-#            - CI
-#            - CI_BRANCH
-#            - CI_BASE_BRANCH
-#            - CI_TAG
-#            - CI_BUILD_ID
-#            - CI_COMMIT
-#            - CI_JOB_ID
-#            - CI_PULL_REQUEST
-#            - CI_REPO_SLUG
-#            - CRATES_IO_TOKEN
-#    name: "stable-sbf"
-#    timeout_in_minutes: 35
-#    artifact_paths: "sbf-dumps.tar.bz2"
-#    agents:
-#      queue: "solana"
-#EOF
-#  else
-#    annotate --style info \
-#      "Stable-SBF skipped as no relevant files were modified"
-#  fi
-#
-#  # Downstream backwards compatibility
-#  if affects \
-#             .rs$ \
-#             Cargo.lock$ \
-#             Cargo.toml$ \
-#             ^ci/rust-version.sh \
-#             ^ci/test-stable-perf.sh \
-#             ^ci/test-stable.sh \
-#             ^ci/test-local-cluster.sh \
-#             ^core/build.rs \
-#             ^fetch-perf-libs.sh \
-#             ^programs/ \
-#             ^sdk/ \
-#             cargo-build-bpf$ \
-#             cargo-test-bpf$ \
-#             cargo-build-sbf$ \
-#             cargo-test-sbf$ \
-#             ^ci/downstream-projects \
-#             .buildkite/scripts/build-downstream-projects.sh \
-#      ; then
-#    .buildkite/scripts/build-downstream-projects.sh >> "$output_file"
-#  else
-#    annotate --style info \
-#      "downstream-projects skipped as no relevant files were modified"
-#  fi
-#
-#  # Wasm support
-#  if affects \
-#             ^ci/test-wasm.sh \
-#             ^ci/test-stable.sh \
-#             ^sdk/ \
-#      ; then
-#    docker_command_step wasm "ci/test-wasm.sh" "$ci_docker_image" 20
-#  else
-#    annotate --style info \
-#      "wasm skipped as no relevant files were modified"
-#  fi
-#
-#  # Benches...
-#  if affects \
-#             .rs$ \
-#             Cargo.lock$ \
-#             Cargo.toml$ \
-#             ^ci/rust-version.sh \
-#             ^ci/test-coverage.sh \
-#             ^ci/test-bench.sh \
-#             ^ci/bench \
-#             .buildkite/scripts/build-bench.sh \
-#      ; then
-#    .buildkite/scripts/build-bench.sh >> "$output_file"
-#  else
-#    annotate --style info --context test-bench \
-#      "Bench skipped as no .rs files were modified"
-#  fi
+  # Full test suite
+  .buildkite/scripts/build-stable.sh >> "$output_file"
+
+  # Docs tests
+  if affects \
+             .rs$ \
+             Cargo.lock$ \
+             Cargo.toml$ \
+             ^ci/rust-version.sh \
+             ^ci/test-docs.sh \
+      ; then
+    docker_command_step doctest "ci/test-docs.sh" "$ci_docker_image" 15
+  else
+    annotate --style info --context test-docs \
+      "Docs skipped as no .rs files were modified"
+  fi
+  wait_step
+
+  # SBF test suite
+  if affects \
+             .rs$ \
+             Cargo.lock$ \
+             Cargo.toml$ \
+             ^ci/rust-version.sh \
+             ^ci/test-stable-sbf.sh \
+             ^ci/test-stable.sh \
+             ^ci/test-local-cluster.sh \
+             ^core/build.rs \
+             ^fetch-perf-libs.sh \
+             ^programs/ \
+             ^sdk/ \
+             cargo-build-bpf$ \
+             cargo-test-bpf$ \
+             cargo-build-sbf$ \
+             cargo-test-sbf$ \
+      ; then
+    cat >> "$output_file" <<"EOF"
+  - command: "ci/test-stable-sbf.sh"
+    plugins:
+      - docker#v5.12.0:
+          image: "$ci_docker_image"
+          workdir: /solana
+          propagate-environment: true
+          propagate-uid-gid: true
+          environment:
+            - "RUSTC_WRAPPER=/usr/local/cargo/bin/sccache"
+            - AWS_SECRET_ACCESS_KEY
+            - AWS_ACCESS_KEY_ID
+            - SCCACHE_BUCKET
+            - SCCACHE_REGION
+            - SCCACHE_S3_KEY_PREFIX
+            - BUILDKITE_PARALLEL_JOB
+            - BUILDKITE_PARALLEL_JOB_COUNT
+            - CI
+            - CI_BRANCH
+            - CI_BASE_BRANCH
+            - CI_TAG
+            - CI_BUILD_ID
+            - CI_COMMIT
+            - CI_JOB_ID
+            - CI_PULL_REQUEST
+            - CI_REPO_SLUG
+            - CRATES_IO_TOKEN
+    name: "stable-sbf"
+    timeout_in_minutes: 35
+    artifact_paths: "sbf-dumps.tar.bz2"
+    agents:
+      queue: "solana"
+EOF
+  else
+    annotate --style info \
+      "Stable-SBF skipped as no relevant files were modified"
+  fi
+
+  # Downstream backwards compatibility
+  if affects \
+             .rs$ \
+             Cargo.lock$ \
+             Cargo.toml$ \
+             ^ci/rust-version.sh \
+             ^ci/test-stable-perf.sh \
+             ^ci/test-stable.sh \
+             ^ci/test-local-cluster.sh \
+             ^core/build.rs \
+             ^fetch-perf-libs.sh \
+             ^programs/ \
+             ^sdk/ \
+             cargo-build-bpf$ \
+             cargo-test-bpf$ \
+             cargo-build-sbf$ \
+             cargo-test-sbf$ \
+             ^ci/downstream-projects \
+             .buildkite/scripts/build-downstream-projects.sh \
+      ; then
+    .buildkite/scripts/build-downstream-projects.sh >> "$output_file"
+  else
+    annotate --style info \
+      "downstream-projects skipped as no relevant files were modified"
+  fi
+
+  # Wasm support
+  if affects \
+             ^ci/test-wasm.sh \
+             ^ci/test-stable.sh \
+             ^sdk/ \
+      ; then
+    docker_command_step wasm "ci/test-wasm.sh" "$ci_docker_image" 20
+  else
+    annotate --style info \
+      "wasm skipped as no relevant files were modified"
+  fi
+
+  # Benches...
+  if affects \
+             .rs$ \
+             Cargo.lock$ \
+             Cargo.toml$ \
+             ^ci/rust-version.sh \
+             ^ci/test-coverage.sh \
+             ^ci/test-bench.sh \
+             ^ci/bench \
+             .buildkite/scripts/build-bench.sh \
+      ; then
+    .buildkite/scripts/build-bench.sh >> "$output_file"
+  else
+    annotate --style info --context test-bench \
+      "Bench skipped as no .rs files were modified"
+  fi
 
   # Coverage...
   if affects \

@@ -20,9 +20,6 @@ annotate() {
 
 # run coverage for all
 SHORT_CI_COMMIT=${CI_COMMIT:0:9}
-echo "--- Running coverage for $SHORT_CI_COMMIT $CI_COMMIT"
-exit
-
 COMMIT_HASH=$SHORT_CI_COMMIT "$here/../scripts/coverage.sh" "$@"
 
 # compress coverage reports
