@@ -36,10 +36,6 @@ annotate() {
   fi
 }
 
-if [[ -n $SCCACHE_LOCAL_PATH ]]; then
-   sc_local_cache="volumes: [$SCCACHE_LOCAL_PATH:/.cache/sccache]"
-fi
-
 # Assume everything needs to be tested when this file or any Dockerfile changes
 mandatory_affected_files=()
 mandatory_affected_files+=(^ci/buildkite-pipeline.sh)
