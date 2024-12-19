@@ -156,6 +156,7 @@ docker_command_step() {
             - CI_PULL_REQUEST
             - CI_REPO_SLUG
             - CRATES_IO_TOKEN
+            - THREADS_OVERRIDE
     timeout_in_minutes: $4
     artifact_paths: "log-*.txt"
     agents:
