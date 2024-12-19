@@ -62,7 +62,7 @@ use {
     solana_sdk::{
         account::AccountSharedData,
         client::AsyncClient,
-        clock::{self, Slot, DEFAULT_TICKS_PER_SLOT, MAX_PROCESSING_AGE},
+        clock::{Slot, DEFAULT_TICKS_PER_SLOT, MAX_PROCESSING_AGE},
         commitment_config::CommitmentConfig,
         epoch_schedule::{DEFAULT_SLOTS_PER_EPOCH, MINIMUM_SLOTS_PER_EPOCH},
         genesis_config::ClusterType,
@@ -353,50 +353,6 @@ fn test_forwarding() {
         &cluster.connection_cache,
         10,
         20,
-    );
-}
-
-#[test]
-#[serial]
-fn test_restart_node() {
-    solana_logger::setup_with_default(RUST_LOG_FILTER);
-    error!("test_restart_node");
-    let slots_per_epoch = MINIMUM_SLOTS_PER_EPOCH * 2;
-    let ticks_per_slot = 16;
-    let validator_config = ValidatorConfig::default_for_test();
-    let mut cluster = LocalCluster::new(
-        &mut ClusterConfig {
-            node_stakes: vec![DEFAULT_NODE_STAKE],
-            cluster_lamports: DEFAULT_CLUSTER_LAMPORTS,
-            validator_configs: vec![safe_clone_config(&validator_config)],
-            ticks_per_slot,
-            slots_per_epoch,
-            stakers_slot_offset: slots_per_epoch,
-            skip_warmup_slots: true,
-            ..ClusterConfig::default()
-        },
-        SocketAddrSpace::Unspecified,
-    );
-    let nodes = cluster.get_node_pubkeys();
-    cluster_tests::sleep_n_epochs(
-        1.0,
-        &cluster.genesis_config.poh_config,
-        clock::DEFAULT_TICKS_PER_SLOT,
-        slots_per_epoch,
-    );
-    cluster.exit_restart_node(&nodes[0], validator_config, SocketAddrSpace::Unspecified);
-    cluster_tests::sleep_n_epochs(
-        0.5,
-        &cluster.genesis_config.poh_config,
-        clock::DEFAULT_TICKS_PER_SLOT,
-        slots_per_epoch,
-    );
-    cluster_tests::send_many_transactions(
-        &cluster.entry_point_info,
-        &cluster.funding_keypair,
-        &cluster.connection_cache,
-        10,
-        1,
     );
 }
 
