@@ -136,7 +136,6 @@ docker_command_step() {
       - docker#v5.12.0:
           image: "$3"
           workdir: /solana
-          $sc_local_cache
           propagate-environment: true
           propagate-uid-gid: true
           environment:
@@ -236,7 +235,6 @@ all_test_steps() {
       - docker#v5.12.0:
           image: "$ci_docker_image"
           workdir: /solana
-          $sc_local_cache
           propagate-environment: true
           propagate-uid-gid: true
           environment:
