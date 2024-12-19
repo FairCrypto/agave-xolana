@@ -21,7 +21,7 @@ if [[ -n $CI_PULL_REQUEST ]]; then
 	echo "get affected files from PR: $pr_number"
 
   # get affected files
-  readarray -t affected_files < <(GH_TOKEN="$(buildkite-agent secret get GH_TOKEN)" gh pr diff --name-only "$pr_number")
+  readarray -t affected_files < <(gh pr diff --name-only "$pr_number")
   if [[ ${#affected_files[*]} -eq 0 ]]; then
     echo "Unable to determine the files affected by this PR"
     exit 1

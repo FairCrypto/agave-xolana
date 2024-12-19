@@ -7,14 +7,6 @@
 if [[ -n $CI ]]; then
   export CI=1
   if [[ -n $BUILDKITE ]]; then
-    AWS_ACCESS_KEY_ID="$(buildkite-agent secret get AWS_ACCESS_KEY_ID)"
-    AWS_SECRET_ACCESS_KEY="$(buildkite-agent secret get AWS_SECRET_ACCESS_KEY)"
-    SCCACHE_BUCKET="$(buildkite-agent secret get SCCACHE_BUCKET)"
-    SCCACHE_REGION="$(buildkite-agent secret get SCCACHE_REGION)"
-    export AWS_ACCESS_KEY_ID
-    export AWS_SECRET_ACCESS_KEY
-    export SCCACHE_BUCKET
-    export SCCACHE_REGION
     export CI_BRANCH=$BUILDKITE_BRANCH
     export CI_BUILD_ID=$BUILDKITE_BUILD_ID
     if [[ $BUILDKITE_COMMIT = HEAD ]]; then
@@ -25,7 +17,7 @@ if [[ -n $CI ]]; then
     # The standard BUILDKITE_PULL_REQUEST environment variable is always "false" due
     # to how solana-ci-gate is used to trigger PR builds rather than using the
     # standard Buildkite PR trigger.
-    if [[ $CI_BRANCH =~ pull/* ]] || [[ -n $BUILDKITE_PULL_REQUEST_BASE_BRANCH ]]; then
+    if [[ $CI_BRANCH =~ pull/* ]]; then
       export CI_BASE_BRANCH=$BUILDKITE_PULL_REQUEST_BASE_BRANCH
       export CI_PULL_REQUEST=true
     else
