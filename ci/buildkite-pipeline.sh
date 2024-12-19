@@ -126,6 +126,8 @@ EOF
 
 docker_command_step() {
   cat >> "$output_file" <<EOF
+  - name: "Debug Environment"
+    command: "env | sort"
   - name: "$1"
     command: "$2"
     plugins:
