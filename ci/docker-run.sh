@@ -79,6 +79,12 @@ if [[ -n $CI ]]; then
           --env SCCACHE_GCS_KEY_PREFIX
         )
       fi
+
+      if [ -n "$SCCACHE_LOCAL_PATH" ]; then
+        ARGS+=(
+          --volume "$SCCACHE_LOCAL_PATH:/.cache/sccache"
+        )
+      fi
     fi
   fi
 fi

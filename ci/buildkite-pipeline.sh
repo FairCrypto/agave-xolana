@@ -36,6 +36,10 @@ annotate() {
   fi
 }
 
+if [[ -n $SCCACHE_LOCAL_PATH ]]; then
+   sc_local_cache="volumes: [$SCCACHE_LOCAL_PATH:/.cache/sccache]"
+fi
+
 # Assume everything needs to be tested when this file or any Dockerfile changes
 mandatory_affected_files=()
 mandatory_affected_files+=(^ci/buildkite-pipeline.sh)
@@ -132,6 +136,7 @@ docker_command_step() {
       - docker#v5.12.0:
           image: "$3"
           workdir: /solana
+          $sc_local_cache
           propagate-environment: true
           propagate-uid-gid: true
           environment:
@@ -231,6 +236,7 @@ all_test_steps() {
       - docker#v5.12.0:
           image: "$ci_docker_image"
           workdir: /solana
+          $sc_local_cache
           propagate-environment: true
           propagate-uid-gid: true
           environment:
